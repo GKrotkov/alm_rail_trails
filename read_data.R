@@ -21,7 +21,7 @@ colnames(houses) <- c("acre", "home_value", "bedrooms", "bedgroup", "bikescore",
                       "walkscore", "distance", "garage_spaces", "n_rooms", 
                       "n_baths", "squarefeet", "zip")
 
-fit <- lm(log(home_value) ~ log(distance) + bedgroup + garage_spaces + n_baths + 
+fit <- lm(log(home_value) ~ log(distance) + bedrooms + garage_spaces + n_baths + 
               zip + squarefeet, data = houses)
 
 summary(fit)
