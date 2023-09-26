@@ -1,0 +1,62 @@
+---
+title: "Project 1: Rail Trails"
+author: "Gabriel Krotkov"
+date: "2023-09-25"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r data loading, echo = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(gridExtra)
+
+houses <- suppressMessages(read_csv("JSE13-070R2.csv"))
+
+# for simplicity, combine full and half baths
+houses$no_baths <- houses$no_full_baths + (0.5 * houses$no_half_baths)
+
+houses$zip <- factor(houses$zip)
+
+houses <- houses[, c("acre", "adj2007", "bedrooms", "bikescore", 
+                  "walkscore", "distance", "garage_spaces", "no_rooms", 
+                  "no_baths", "squarefeet", "zip")]
+
+save(houses, file = "data.rda")
+```
+
+```{r}
+fit1 <- lm(log(adj2007) ~ log(distance) + bedrooms + garage_spaces + no_baths + zip + 
+               squarefeet + no_rooms + acre, 
+           data = houses)
+
+summary(fit1)
+
+plot(fit1)
+```
+
+Reasons for including/not including variables: 
+- Walkscore/bikescore, do NOT include, we think they overlap with `distance` in that they incorporate the nearby presence of the Rail Trail
+- 
+
+# Introduction 
+
+We will write an introduction here 
+
+# Exploratory Data Analysis
+
+We will integrate the EDA from our three different projects here
+
+# Methods 
+
+
+
+# Results 
+
+We will show plots and model summaries here
+
+# Discussions 
+
+We will discuss our overall results and come to a conclusion here.
