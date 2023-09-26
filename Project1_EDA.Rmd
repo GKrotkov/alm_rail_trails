@@ -1,0 +1,138 @@
+---
+title: "Project1_EDA"
+author: "Jamie Kim"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Data uploading
+houses <- suppressMessages(read_csv("JSE13-070R2.csv"))
+houses$no_baths <- houses$no_full_baths + (0.5 * houses$no_half_baths)
+
+houses$zip <- factor(houses$zip)
+
+houses$bedgroup <- factor(houses$bedgroup, 
+                          levels = c("1-2 beds", "3 beds", "4+ beds"))
+
+houses <- houses[, c("acre", "adj2007", "bedrooms", "bedgroup", "bikescore", 
+                     "walkscore", "distance", "garage_spaces", "no_rooms", 
+                     "no_baths", "squarefeet", "zip")]
+
+fit <- lm(log(adj2007) ~ log(distance) + bedgroup + garage_spaces + no_baths + zip + 
+               squarefeet, data = houses)
+
+save(houses, fit, file = "data.rda")
+```
+
+```{r}
+# Summary statistics
+summary(houses)
+```
+
+```{r}
+houses %>%
+  ggplot(aes(x = adj2007)) +
+  geom_histogram(fill = "steelblue", col = "darkblue") +
+  geom_vline(aes(xintercept = mean(adj2007)), col = "red") +
+  theme_bw() +
+  labs(
+    title = "Histogram of House Values in 2007 with Mean",
+    x = "House Value in 2007 (in thousands)",
+    y = "Count"
+  )
+```
+
+
+```{r}
+houses %>%
+  ggplot(aes(x = distance)) +
+  geom_histogram(fill = "steelblue", col = "darkblue") +
+  geom_vline(aes(xintercept = mean(distance)), col = "red") +
+  theme_bw() +
+  labs(
+    title = "Histogram of Distance with Mean",
+    x = "Distance (in feet)",
+    y = "Count"
+  )
+```
+
+
+
+```{r}
+houses %>%
+  ggplot(aes(x = distance, y = adj2007)) +
+  geom_point(col = "steelblue") +
+  theme_bw() +
+  labs(
+    title = "Scatterplot of House Values in 2007 vs. Distance",
+    x = "Distance (in feet)",
+    y = "House Values in 2007 (in thousands)"
+  )
+```
+
+```{r}
+houses %>%
+  ggplot(aes(x = bedrooms, y = adj2007)) +
+  geom_point(col = houses$bedgroup, alpha = 0.5) + 
+  theme_bw()+
+  labs(
+    title = "Scatterplot of House Values in 2007 vs. Number of Bedrooms",
+    x = "Bedrooms",
+    y = "House Values in 2007 (in thousands)"
+  )
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
