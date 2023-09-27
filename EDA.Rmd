@@ -1,0 +1,65 @@
+---
+title: "EDA"
+author: "Tilina Alzaben"
+date: "2023-09-27"
+output: html_document
+---
+
+**Introduction** 
+
+In the late 19th and early 20th centuries, the United States saw a massive expansion of its railway system, connecting towns and cities for both people and goods. However, things changed with the rise of cars and the Interstate Highway System, which encouraged long-distance road travel. As a result, railways became less popular, leading to the abandonment of many rail lines. Interestingly, some of these disused railway lines found new life as "rail trails" – paths for walking and biking that are easy to access and great for outdoor activities.
+
+Our study aims to investigate whether living near a rail trail makes homes more appealing and whether people are willing to pay extra for such homes. To do this, we're using data from 104 homes sold in Northampton, Massachusetts, in 2007. This research can help Acme Homes, LLC, a company that builds and sells houses, find promising locations for future housing projects. We'll analyze the data to see if there's a connection between proximity to a rail trail and home values, helping Acme Homes make informed decisions about where to build homes.
+
+**Exploratory Data Analysis**
+
+This dataset contains a variety of information about homes, such as their values, sizes, bedroom numbers, proximity to rail trails, bike and walkability scores, and more. By examining this data, we aim to better understand its characteristics and set the stage for more detailed analysis.
+
+The dataset provides home values at different years and shows how much these values changed over time. It also includes location details like latitude, longitude, and ZIP codes, which can help us identify any spatial patterns. Additionally, we can see how far each home is from the nearest rail trail, and we've categorized them as either "Closer" or "Farther Away" to investigate how living near a rail trail might affect property values. Furthermore, we have information on property size, bedroom count, square footage, bathrooms, and garage availability. These details can help us understand what factors influence property values. Additionally, the dataset includes bike and walking scores, which indicate how bike-friendly and walkable the neighborhoods are where these homes are located.
+
+During our analysis, we found some key insights. For instance, in 2007, the average house value was around $327,600, giving us an idea of typical property values during that year. The average distance from homes to rail trails is about 1.11 feet, showing how close these properties are to these recreational paths. Moreover, most homes in the dataset have three bedrooms and either zero or one garage space, suggesting common features in these residential properties. Importantly, we observed that there are no missing values in the dataset, ensuring that we have complete data for all variables.
+
+```{r, echo = FALSE, message = FALSE}
+
+houses %>%
+  ggplot(aes(x = adj2007)) +
+  geom_histogram(fill = "steelblue", col = "darkblue") +
+  geom_vline(aes(xintercept = mean(adj2007)), col = "red") +
+  theme_bw() +
+  labs(
+    title = "Distribution of House Values in 2007",
+    subtitle = "(the average house value cost $327,600)",
+    x = "House Value in 2007 (in thousands)",
+    y = "Count"
+  )
+
+houses %>%
+  ggplot(aes(x = distance)) +
+  geom_histogram(fill = "steelblue", col = "darkblue") +
+  geom_vline(aes(xintercept = mean(distance)), col = "red") +
+  theme_bw() +
+  labs(
+    title = "Distribution of Distance to Rail Trail",
+    subtitle = "(the average distance is 1.11 ft)",
+    x = "Distance (in feet)",
+    y = "Count"
+  )
+```
+
+In our data preprocessing phase, we made some essential adjustments to improve the dataset's quality and usability. We created a new variable, "no_baths," by combining bathroom information in a way that simplifies our analysis. We also treated ZIP codes as categories, recognizing that they are not numbers with an inherent order. Furthermore, we grouped the "no_bedrooms" variable into categories (from 1 to 6) to make it easier to understand. Lastly, we improved variable names to make them more intuitive. These preprocessing steps help make the dataset more suitable for in-depth analysis while preserving the data's accuracy and meaning.
+
+```{r}
+houses %>%
+  ggplot(aes(x = bedrooms, y = adj2007)) +
+  geom_point(col = houses$bedgroup, alpha = 0.5) + 
+  theme_bw()+
+  labs(
+    title = "Scatterplot of House Values in 2007 vs. Number of Bedrooms",
+    x = "Bedrooms",
+    y = "House Values in 2007 (in thousands)"
+  )
+```
+
+
+
+
