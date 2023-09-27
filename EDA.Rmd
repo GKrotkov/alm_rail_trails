@@ -13,11 +13,43 @@ Our study aims to investigate whether living near a rail trail makes homes more 
 
 **Exploratory Data Analysis**
 
-This dataset contains a variety of information about homes, such as their values, sizes, bedroom numbers, proximity to rail trails, bike and walkability scores, and more. By examining this data, we aim to better understand its characteristics and set the stage for more detailed analysis.
+This dataset includes a wide range of information about residential properties, including details such as their values, sizes, bedroom counts, proximity to rail trails, bike and walkability scores, and more. Our goal in analyzing this dataset is to gain a deeper understanding of its underlying characteristics, providing a foundation for more comprehensive analysis.
 
-The dataset provides home values at different years and shows how much these values changed over time. It also includes location details like latitude, longitude, and ZIP codes, which can help us identify any spatial patterns. Additionally, we can see how far each home is from the nearest rail trail, and we've categorized them as either "Closer" or "Farther Away" to investigate how living near a rail trail might affect property values. Furthermore, we have information on property size, bedroom count, square footage, bathrooms, and garage availability. These details can help us understand what factors influence property values. Additionally, the dataset includes bike and walking scores, which indicate how bike-friendly and walkable the neighborhoods are where these homes are located.
+The dataset not only offers information on home values but also tracks changes in these values over various years. Additionally, it provides location-specific data, including latitude, longitude, and ZIP codes. This geographical data is particularly valuable for identifying potential spatial patterns within the dataset.
 
-During our analysis, we found some key insights. For instance, in 2007, the average house value was around $327,600, giving us an idea of typical property values during that year. The average distance from homes to rail trails is about 1.11 feet, showing how close these properties are to these recreational paths. Moreover, most homes in the dataset have three bedrooms and either zero or one garage space, suggesting common features in these residential properties. Importantly, we observed that there are no missing values in the dataset, ensuring that we have complete data for all variables.
+One key aspect we investigate is the distance of each home to the nearest rail trail, expressed both in feet and as a categorical variable ("Closer" or "Farther Away"). This approach allows us to explore how living in proximity to a rail trail may impact property values. During our analysis, we've noticed a few outliers in the data, notably a $669,925 home closer to a rail trail and several homes with values of $798,624, $516,520, $513,647, and $495,836, which are farther away from rail trails. These outliers could provide valuable insights into the relationship between distance to rail trails and property values. 
+
+```{r}
+ggplot(houses, aes(x = distgroup, y = adj2007)) +
+  geom_boxplot(fill = "steelblue", color = "darkblue") +
+  labs(title = "House Values by Proximity to Rail Trail",
+       x = "Distance to Rail Trail",
+       y = "House Value (thousands)")
+```
+
+Moreover, the dataset contains essential information regarding property attributes, such as acres or square footage, bedroom counts, bathroom numbers, and the availability of garage parking. This wealth of data enables us to delve into the factors that exert influence on property values, shedding light on the key determinants.
+
+Additionally, we have bike and walking scores within the dataset which serve as indicators of the neighborhood's bike-friendliness and walkability. Both scatterplots below demonstrate that bikescore and walkscore exhibit remarkably similar patterns, suggesting a strong correlation. It's worth noting that these scores are third-party evaluations and may take into account factors like proximity to rail trails. Consequently, there is the possibility that these scores are not entirely independent, a relationship we will explore in more depth in subsequent sections of our analysis.
+
+```{r}
+library(patchwork)
+
+bikescore <- ggplot(houses, aes(x = bikescore, y = distance)) +
+  geom_point(color = "darkblue") +
+  labs(title = "Bike Score and Distance to Rail Trail",
+       y = "Distance to Rail Trail (in feet)",
+       x = "Bike Score")
+
+walkscore <- ggplot(houses, aes(x = walkscore, y = distance)) +
+  geom_point(color = "steelblue") +
+  labs(title = "Walk Score and Distance to Rail Trail",
+       y = "Distance to Rail Trail (in feet)",
+       x = "Walk Score")
+
+bikescore + walkscore
+```
+
+In the course of our analysis, we uncovered some noteworthy findings. For example, in the year 2007, the average house value was approximately $327,600. This figure provides valuable insight into the typical property values for that specific year, offering a crucial reference point. Furthermore, our examination revealed that the average distance from homes to rail trails is roughly 1.11 feet. This metric provides a clear picture of how proximate these properties are to these recreational pathways, highlighting their accessibility.
 
 ```{r, echo = FALSE, message = FALSE}
 
@@ -45,8 +77,48 @@ houses %>%
     y = "Count"
   )
 ```
+Additionally, our analysis unveiled an intriguing correlation: the distance to a rail trail exhibited a negative correlation with home value. This suggests that there is a potential relationship between distance from a rail trail and home value. Specifically, it implies that homes situated farther away from rail trails may tend to be more affordable. This correlation warrants further exploration to better understand its implications.
 
-In our data preprocessing phase, we made some essential adjustments to improve the dataset's quality and usability. We created a new variable, "no_baths," by combining bathroom information in a way that simplifies our analysis. We also treated ZIP codes as categories, recognizing that they are not numbers with an inherent order. Furthermore, we grouped the "no_bedrooms" variable into categories (from 1 to 6) to make it easier to understand. Lastly, we improved variable names to make them more intuitive. These preprocessing steps help make the dataset more suitable for in-depth analysis while preserving the data's accuracy and meaning.
+```{r}
+houses %>%
+  ggplot(aes(x = distance, y = adj2007)) +
+  geom_point(col = "steelblue") +
+  theme_bw() +
+  labs(
+    title = "Scatterplot of House Values in 2007 vs. Distance",
+    x = "Distance (in feet)",
+    y = "House Values in 2007 (in thousands)"
+  )
+```
+Furthermore, it's worth noting that the majority of homes within the dataset boast three bedrooms and either zero or one garage space, indicating prevalent features among these residential properties. This observation provides valuable insight into the common characteristics of the homes under consideration.
+
+Importantly, one key highlight of our analysis is the absence of missing values in the dataset. This means that we have complete and comprehensive data for all variables, ensuring the reliability and integrity of our dataset throughout our analytical process.
+
+```{r}
+bedrooms <- houses %>%
+  ggplot(aes(x = bedrooms)) +
+  geom_bar(fill = "steelblue", color = "darkblue") +
+  theme_bw() +
+  labs(
+    title = "Number of Bedrooms",
+    x = "Bedrooms",
+    y = "Count"
+  )
+
+garage <- houses %>%
+  ggplot(aes(x = garage_spaces)) +
+  geom_bar(fill = "steelblue", color = "darkblue") +
+  theme_bw() +
+  labs(
+    title = "Number of Garage Space",
+    x = "Garages",
+    y = "Count"
+  )
+
+bedrooms + garage
+```
+
+In our data preprocessing phase, we made some essential adjustments to improve the dataset's quality and usability. We created a new variable, "no_baths," by combining bathroom information in a way that simplifies our analysis. We also treated ZIP codes as categorical, recognizing that they are not numbers with an inherent order. Furthermore, we treated the "no_bedrooms" variable as categorical to make it easier to understand. Lastly, we improved variable names to make them more intuitive. These preprocessing steps help make the dataset more suitable for in-depth analysis while preserving the data's accuracy and meaning.
 
 ```{r}
 houses %>%
