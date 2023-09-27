@@ -11,7 +11,10 @@ houses$no_baths <- houses$no_full_baths + (0.5 * houses$no_half_baths)
 
 houses$zip <- factor(houses$zip)
 
-houses$bedrooms <- factor(houses$bedrooms)
+houses$bedrooms <- factor(ifelse(houses$bedrooms > 2, 
+                                 "3+", houses$bedrooms))
+houses$garage_spaces <- factor(ifelse(houses$garage_spaces > 1, 
+                                      "2+", houses$garage_spaces))
 
 houses <- houses[, c("acre", "adj2007", "bedrooms", "bedgroup", "bikescore", 
                      "walkscore", "distance", "garage_spaces", "no_rooms", 
