@@ -1,0 +1,235 @@
+---
+title: "Project 1: Rail Trails"
+author: "Tilina Albazen, Jamie Kim, Gabriel Krotkov"
+date: "2023-09-25"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r data loading, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(gridExtra)
+library(car)
+load("data.rda")
+```
+
+# Introduction
+
+In the late 19th and early 20th centuries, the United States saw a massive expansion of its railway system, connecting towns and cities for both people and goods. However, things changed with the rise of cars and the Interstate Highway System, which encouraged long-distance road travel. As a result, railways became less popular, leading to the abandonment of many rail lines. Interestingly, some of these disused railway lines found new life as "rail trails" – paths for walking and biking that are easy to access and great for outdoor activities.
+
+Our study aims to investigate whether living near a rail trail makes homes more appealing and whether people are willing to pay extra for such homes. To do this, we're using data from 104 homes sold in Northampton, Massachusetts, in 2007. This research can help Acme Homes, LLC, a company that builds and sells houses, find promising locations for future housing projects. We'll analyze the data to see if there's a connection between proximity to a rail trail and home values, helping Acme Homes make informed decisions about where to build homes.
+
+# Exploratory Data Analysis
+
+This dataset includes a wide range of information about residential properties, including details such as their values, sizes, bedroom counts, proximity to rail trails, bike and walkability scores, and more. Our goal in analyzing this dataset is to gain a deeper understanding of its underlying characteristics, providing a foundation for more comprehensive analysis.
+
+The dataset not only offers information on home values but also tracks changes in these values over various years. Additionally, it provides location-specific data, including latitude, longitude, and ZIP codes. This geographical data is particularly valuable for identifying potential spatial patterns within the dataset.
+
+One key aspect we investigate is the distance of each home to the nearest rail trail, expressed both in feet and as a categorical variable ("Closer" or "Farther Away"). This approach allows us to explore how living in proximity to a rail trail may impact property values. During our analysis, we've noticed a few outliers in the data, notably a $669,925 home closer to a rail trail and several homes with values of $798,624, $516,520, $513,647, and $495,836, which are farther away from rail trails. These outliers could provide valuable insights into the relationship between distance to rail trails and property values. 
+
+```{r}
+ggplot(houses, aes(x = distgroup, y = home_value)) +
+  geom_boxplot(fill = "steelblue", color = "darkblue") +
+  labs(title = "House Values by Proximity to Rail Trail",
+       x = "Distance to Rail Trail",
+       y = "House Value (thousands)")
+```
+
+Moreover, the dataset contains essential information regarding property attributes, such as acres or square footage, bedroom counts, bathroom numbers, and the availability of garage parking. This wealth of data enables us to delve into the factors that exert influence on property values, shedding light on the key determinants.
+
+Additionally, we have bike and walking scores within the dataset which serve as indicators of the neighborhood's bike-friendliness and walkability. Both scatterplots below demonstrate that bikescore and walkscore exhibit remarkably similar patterns, suggesting a strong correlation. It's worth noting that these scores are third-party evaluations and may take into account factors like proximity to rail trails. Consequently, there is the possibility that these scores are not entirely independent, a relationship we will explore in more depth in subsequent sections of our analysis.
+
+```{r}
+library(patchwork)
+
+bikescore <- ggplot(houses, aes(x = bikescore, y = distance)) +
+  geom_point(color = "darkblue") +
+  labs(title = "Bike Score and Distance to Rail Trail",
+       y = "Distance to Rail Trail (in feet)",
+       x = "Bike Score")
+
+walkscore <- ggplot(houses, aes(x = walkscore, y = distance)) +
+  geom_point(color = "steelblue") +
+  labs(title = "Walk Score and Distance to Rail Trail",
+       y = "Distance to Rail Trail (in feet)",
+       x = "Walk Score")
+
+bikescore + walkscore
+```
+
+In the course of our analysis, we uncovered some noteworthy findings. For example, in the year 2007, the average house value was approximately $327,600. This figure provides valuable insight into the typical property values for that specific year, offering a crucial reference point. Furthermore, our examination revealed that the average distance from homes to rail trails is roughly 1.11 feet. This metric provides a clear picture of how proximate these properties are to these recreational pathways, highlighting their accessibility.
+
+```{r, echo = FALSE, message = FALSE}
+
+houses %>%
+  ggplot(aes(x = home_value)) +
+  geom_histogram(fill = "steelblue", col = "darkblue") +
+  geom_vline(aes(xintercept = mean(home_value)), col = "red") +
+  theme_bw() +
+  labs(
+    title = "Distribution of House Values in 2007",
+    subtitle = "(the average house value cost $327,600)",
+    x = "House Value in 2007 (in thousands)",
+    y = "Count"
+  )
+
+houses %>%
+  ggplot(aes(x = distance)) +
+  geom_histogram(fill = "steelblue", col = "darkblue") +
+  geom_vline(aes(xintercept = mean(distance)), col = "red") +
+  theme_bw() +
+  labs(
+    title = "Distribution of Distance to Rail Trail",
+    subtitle = "(the average distance is 1.11 ft)",
+    x = "Distance (in feet)",
+    y = "Count"
+  )
+```
+Additionally, our analysis unveiled an intriguing correlation: the distance to a rail trail exhibited a negative correlation with home value. This suggests that there is a potential relationship between distance from a rail trail and home value. Specifically, it implies that homes situated farther away from rail trails may tend to be more affordable. This correlation warrants further exploration to better understand its implications.
+
+```{r}
+houses %>%
+  ggplot(aes(x = distance, y = home_value)) +
+  geom_point(col = "steelblue") +
+  theme_bw() +
+  labs(
+    title = "Scatterplot of House Values in 2007 vs. Distance",
+    x = "Distance (in feet)",
+    y = "House Values in 2007 (in thousands)"
+  )
+```
+Furthermore, it's worth noting that the majority of homes within the dataset boast three bedrooms and either zero or one garage space, indicating prevalent features among these residential properties. This observation provides valuable insight into the common characteristics of the homes under consideration.
+
+Importantly, one key highlight of our analysis is the absence of missing values in the dataset. This means that we have complete and comprehensive data for all variables, ensuring the reliability and integrity of our dataset throughout our analytical process.
+
+```{r}
+bedrooms <- houses %>%
+  ggplot(aes(x = bedrooms)) +
+  geom_bar(fill = "steelblue", color = "darkblue") +
+  theme_bw() +
+  labs(
+    title = "Number of Bedrooms",
+    x = "Bedrooms",
+    y = "Count"
+  )
+
+garage <- houses %>%
+  ggplot(aes(x = garage_spaces)) +
+  geom_bar(fill = "steelblue", color = "darkblue") +
+  theme_bw() +
+  labs(
+    title = "Number of Garage Space",
+    x = "Garages",
+    y = "Count"
+  )
+
+bedrooms + garage
+```
+
+In our data preprocessing phase, we made some essential adjustments to improve the dataset's quality and usability. We created a new variable, "no_baths," by combining bathroom information in a way that simplifies our analysis. We also treated ZIP codes as categorical, recognizing that they are not numbers with an inherent order. Furthermore, we treated the "no_bedrooms" variable as categorical to make it easier to understand. Lastly, we improved variable names to make them more intuitive. These preprocessing steps help make the dataset more suitable for in-depth analysis while preserving the data's accuracy and meaning.
+
+```{r}
+houses %>%
+  ggplot(aes(x = bedrooms, y = home_value)) +
+  geom_point(col = houses$bedgroup, alpha = 0.5) + 
+  theme_bw()+
+  labs(
+    title = "Scatterplot of House Values in 2007 vs. Number of Bedrooms",
+    x = "Bedrooms",
+    y = "House Values in 2007 (in thousands)"
+  )
+```
+
+\newpage
+
+# Methods 
+
+## Variable Selection
+
+For a response variable, we selected the 2007 Zillow Estimate for the value of the home, because according to the data dictionary the other features of the houses (distance to rail trails, # of bedrooms and bathrooms, etc) were recorded in 2007. Selecting the 2007 Zillow Estimate ensured that those important features were as true as possible, since renovations are frequent in residential properties and it is very plausible that over the years 
+
+There are a couple variables that we decided not to consider in the model for methodological reasons. We decided not to consider the variables $walkscore$ and $bikescore$ in our model, because those variables are third party evaluations of the walkability and bikeability of the nearby area, which could include proximity to the rail trail. In this way $walkscore$ and $bikescore$ are measuring some of the explanatory value of $distance$, which is what we are interested in; this is a problem for the independence of our covariates. This was reflected by fitting models that included all three covariates, in which we observed a nearly doubled standard error ($SE_{logdistance} = 0.02$ instead of $SE_{logdistance} = 0.012$) of the $distance$ variable compared to a simpler fit. 
+
+We also decided to focus on the $squarefeet$ variable in lieu of $acre$, and the $bedrooms$ and $bathrooms$ variables in lieu of $number\_rooms$. This is partially because the consensus of the housing market is that the real drivers of value are a property's square footage and the number of bedrooms and bathrooms; these are advertised in every listing, while acres of property and the number of rooms in the house are not. Also intuitively, the number of rooms you have doesn't necessarily impact the amount of space you have: many small rooms are not better than a few large ones. The relationships between our response and these variables seen in the EDA were not enough to convince us to include these variables in our model.
+
+Lastly, we included $zip$ as a categorical variable in the data because zip code is frequently an important consideratin in home value, like for adjacency to certain school districts or public amenities. Including $zip$ should account for a lot of variation in $home\_value$ irrelevant to $distance$.
+
+## Transformations and categorization
+
+We decided on a pair of transformations of the data to create a better fit for the mean model. Based on our EDA, it looks like the relationship between $log(home value)$ and $log(distance)$ is more linear than the relationship between $home value$ and $distance$. Applying the log function also has the benefit of bringing in line some of the observed outliers in both $home value$ and $distance$; log more strongly affects the higher values and helps to linearize the relationship in that way.
+
+We also saw in our EDA that the $bedrooms$ variable has a very nonlinear relationship with the response. We decided to treat $bedrooms$ as a discrete categorical variable to accommodate that relationship - since we are primarily interested in interpreting the coefficient of the $log(distance)$ variable we did not bin the $bedrooms$ variable - the many coefficients of $bedrooms$ will help control variance in the relationship between $log(house\_value)$ and $log(distance)$. We binned the $garage\_spaces$ variable into the bins $spaces = 0, spaces = 1, spaces = 2+$, since our EDA reflected that as the the most appropriate relationship.
+
+## Modeling & Diagnostics
+
+We based on our analysis we decided that this model was the most appropriate choice to represent home value.
+$$
+\begin{aligned}
+log(home value) = \beta_{dist}log(dist) + \beta_{zip}(I_{zip1062}) \beta_{garage\_spaces}(garage\_spaces) + \beta_{baths}(baths) + \beta_{sqft}(I_{sqft}) + \\ 
+\Sigma_{i = 1}^{6}{\beta_{beds = i}(I_{beds = i})} + \beta_{1garagespace}(I_{1garagespace}) + \beta_{2+garagespaces}(I_{2+garagespaces})
+\end{aligned}
+$$
+To assess the validity of our chosen model, we'll now look at the model diagnostics.
+\newpage
+```{r diagnostics, fig.height = 10}
+par(mfrow = c(3, 2))
+plot(fit, which = c(1:5))
+```
+
+```{r covariates, fig.height = 10}
+par(mfrow = c(3, 2))
+plot(y = rstandard(fit), x = fit$model$`log(distance)`, 
+     main = "Standardized Residuals vs Log Distance", 
+     xlab = "Log Distance to nearest Rail Trail", ylab = "Standardized Residuals")
+abline(h = 0, lty = 2, col = "red")
+
+plot(y = rstandard(fit), x = fit$model$squarefeet, 
+     main = "Standardized Residuals vs Square Footage", 
+     xlab = "Square Footage", ylab = "Standardized Residuals")
+abline(h = 0, lty = 2, col = "red")
+
+plot(y = rstandard(fit), x = fit$model$n_baths, 
+     main = "Standardized Residuals vs # of Bathrooms", 
+     xlab = "Log Distance to nearest Rail Trail", ylab = "Standardized Residuals")
+abline(h = 0, lty = 2, col = "red")
+
+plot(y = rstandard(fit), x = fit$model$zip, 
+     main = "Standardized Residuals vs Zip Code", 
+     xlab = "Zip Code", ylab = "Standardized Residuals")
+abline(h = 0, lty = 2, col = "red")
+
+plot(y = rstandard(fit), x = fit$model$bedrooms, 
+     main = "Standardized Residuals vs Bedrooms", 
+     xlab = "Number of Bedrooms", ylab = "Standardized Residuals")
+abline(h = 0, lty = 2, col = "red")
+plot(y = rstandard(fit), x = fit$model$garage_spaces, 
+     main = "Standardized Residuals vs Garage Spaces", 
+     xlab = "Number of Garage Spaces", ylab = "Standardized Residuals")
+abline(h = 0, lty = 2, col = "red")
+```
+
+
+The model diagnostics are generally encouraging for the validity of our model. The Cook's Distance plot shows that no points are much more influential than others incorporating both distance in the response and the covariate space. We do appear to have a few high leverage points (high outliers in X), but they align well with the model. The spareness of our data on the right hand side of the plot is not ideal but not a grave concern for the model. 
+
+We can feel reasonably strong about the linearity assumption, because on both the plot of the standardized residuals against the primary covariate (log distance) and the standardized residuals against each individual covariate we see a mean around 0. The equal variance assumption is less strong: we can see meaningful nonconstant variance in the residuals vs fitted plot in the top left section. This is reflected in the plot of the standardized residuals against square footage. However, we were unable to find transformations of the $squarefeet$ variable that did not cause worse side effects for the constant variance assumption. Similarly there is a some nonconstant variance in the plot of the standardized residuals against $log(distance)$, but it is possible that the sparseness in high fitted values (as we can see in the residuals vs fitted plot) is influencing that result. Other than those specific concerns, the variance of the residuals plots all looks reasonably close to constant, 
+
+Meanwhile our normal Q-Q plot shows a nearly a straight line, which gives us reason to feel confident that the distribution of our residuals given the covariates is in fact Gaussian. None of the plots gives us a good reason to doubt the independence assumption, and given the collection of the data it is reasonable to assume that the value of each house is independent (especially given that we are controlling for zip code.)
+
+Overall, the model diagnostics show us some drawbacks in the model (the nonconstant variance), but every other assumption is well satisfied, and even the constant variance assumption is not grossly violated.
+
+# Results 
+
+The multilinear model we settled on was overall significant ($F_{df1=11, df2=92} = 43.35; p < 0.05$), indicating that we have significant evidence to reject the null hypothesis that our entire model is equal to a model including just the mean of the response as an intercept. The model as a whole despite only including 6 covariates had an $R^2 = 0.8383$, indicating that our 6 covariates explained 83% of the variation in log home value, which given the relatively small size of the data and high general variance in the house market seems strong. We found a significant ($t_{df=103} = -3.853, p < 0.05$) coefficient for the $log(distance)$ covariate, indicating that we have enough evidence to reject the null hypothesis that there is no relationship between $log(home\_value)$ and $log(distance)$. We found $\hat{\beta}_{log-distance} = -0.0469$, indicating that each log mile decrease in distance was associated with a $0.0469$ point difference in home value (in log thousands of dollars). Converting this to more sensible units gives us that a 1 mile decrease in distance to a rail trail is associated with a ($e^{0.0469} = 1.048$) thousand dollar increase in home value. This indicates to us that rail trails **are** attractive for home buyers, since they are willing to pay higher rates for closer access to the rail trails, even controlling for other variables, and that on average the market is willing to pay about an additional 1048 dollars for each mile closer to a rail trail.
+
+# Discussions 
+
+We will discuss our overall results and come to a conclusion here.
+
+@TODO make sure we use "home value" instead of "price" or "home_value" in the final report
+@TODO move argument about any variable for which we don't do EDA into the EDA section (or do EDA on it)
+@TODO add to the variable selection section referencing the EDA plots
+@TODO residuals vs distance covariate plot
+@TODO maybe switch the binning
